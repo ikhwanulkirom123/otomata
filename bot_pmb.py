@@ -3,7 +3,7 @@ import time
 
 # --- Konfigurasi Halaman ---
 st.set_page_config(
-    page_title="PMB UPGRIS Chatbot",
+    page_title="PMB UPGRIS Chatbot v1",
     page_icon="🔴",
     layout="wide"
 )
@@ -249,23 +249,23 @@ st.markdown(
 STATES = {
     'q0': { 
         'name': 'Menu Utama', 
-        'text': "Halo! Selamat datang di **Layanan Informasi PMB UPGRIS Care**.\n\nSilakan pilih menu dengan mengetik angkanya:\n\n* 🔴 **[1]** Jadwal Pendaftaran\n* 🔴 **[2]** Syarat Dokumen\n* 🔴 **[3]** Kuota Jalur Penerimaan\n* 🔴 **[4]** Panduan Cara Daftar\n* ❌ **[9]** Akhiri Sesi" 
+        'text': "Halo! Selamat datang di **Layanan Informasi PMB UPGRIS Care**.\n\nSilakan pilih menu dengan mengetik angkanya atau tanyakan langsung secara natural:\n\n* 🔴 **[1]** Jadwal Pendaftaran\n* 🔴 **[2]** Syarat Dokumen\n* 🔴 **[3]** Kuota Jalur Penerimaan\n* 🔴 **[4]** Panduan Cara Daftar\n* ❌ **[9]** Akhiri Sesi" 
     },
     'q1': { 
         'name': 'Info Jadwal', 
-        'text': "📅 **Jadwal Resmi PMB UPGRIS**\n- **Pendaftaran Online:** 1 - 10 Juli\n- **Verifikasi Berkas:** 2 - 12 Juli\n- **Pengumuman:** 15 Juli\n- **Daftar Ulang:** 16 - 18 Juli\n\nKetik **[0]** untuk kembali ke Menu Utama." 
+        'text': "📅 **Jadwal Resmi PMB UPGRIS**\n- **Pendaftaran Online:** 1 - 10 Juli\n- **Verifikasi Berkas:** 2 - 12 Juli\n- **Pengumuman:** 15 Juli\n- **Daftar Ulang:** 16 - 18 Juli\n\nKetik **[0]** atau **'kembali'** untuk ke Menu Utama." 
     },
     'q2': { 
         'name': 'Info Syarat', 
-        'text': "📄 **Syarat Dokumen PMB UPGRIS**\n1. Scan Kartu Keluarga asli\n2. Scan Akta Kelahiran\n3. Surat Keterangan Lulus (SKL)\n4. Pas Foto 3x4 background merah\n\nKetik **[0]** untuk kembali ke Menu Utama." 
+        'text': "📄 **Syarat Dokumen PMB UPGRIS**\n1. Scan Kartu Keluarga asli\n2. Scan Akta Kelahiran\n3. Surat Keterangan Lulus (SKL)\n4. Pas Foto 3x4 background merah\n\nKetik **[0]** atau **'kembali'** untuk ke Menu Utama." 
     },
     'q3': { 
         'name': 'Info Kuota', 
-        'text': "📊 **Kuota Jalur Penerimaan**\n- **Jalur Zonasi:** 50%\n- **Jalur Prestasi:** 30%\n- **Jalur Afirmasi:** 15%\n- **Jalur Pindah Tugas Ortu:** 5%\n\nKetik **[0]** untuk kembali ke Menu Utama." 
+        'text': "📊 **Kuota Jalur Penerimaan**\n- **Jalur Zonasi:** 50%\n- **Jalur Prestasi:** 30%\n- **Jalur Afirmasi:** 15%\n- **Jalur Pindah Tugas Ortu:** 5%\n\nKetik **[0]** atau **'kembali'** untuk ke Menu Utama." 
     },
     'q4': { 
         'name': 'Panduan', 
-        'text': "💻 **Panduan Cara Daftar**\n1. Kunjungi website resmi PMB UPGRIS\n2. Klik 'Buat Akun' menggunakan NISN\n3. Isi biodata & pilih jalur\n4. Unggah dokumen persyaratan\n5. Cetak Bukti Pendaftaran\n\nKetik **[0]** untuk kembali ke Menu Utama." 
+        'text': "💻 **Panduan Cara Daftar**\n1. Kunjungi website resmi PMB UPGRIS\n2. Klik 'Buat Akun' menggunakan NISN\n3. Isi biodata & pilih jalur\n4. Unggah dokumen persyaratan\n5. Cetak Bukti Pendaftaran\n\nKetik **[0]** atau **'kembali'** untuk ke Menu Utama." 
     },
     'q5': { 
         'name': 'Selesai (Final)', 
@@ -281,9 +281,43 @@ if 'messages' not in st.session_state:
 if 'transition_log' not in st.session_state:
     st.session_state.transition_log = [("System Start", "-", "q0")]
 
-# --- Fungsi Logika Transisi DFA (δ) ---
-def process_input(user_input):
+# --- Fungsi Pengenal Kalimat Alami (Natural Language Mapping) ---
+def natural_input_mapping(user_input):
     val = user_input.strip().lower()
+    
+    # 1. Cek Token untuk Menu Kembali / Mulai / Selesai
+    if val in ['0', 'kembali', 'menu', 'home', 'back', 'utama']:
+        return '0'
+    if val in ['9', 'keluar', 'exit', 'selesai', 'stop', 'end']:
+        return '9'
+    if val in ['mulai', 'start', 'restart', 'aktifkan']:
+        return 'mulai'
+        
+    # 2. Cek Kata Kunci berbasis konten/intent kalimat
+    # Kategori Jadwal (State q1)
+    if any(keyword in val for keyword in ['jadwal', 'kapan', 'tanggal', 'buka', 'tutup', 'waktu', 'agenda']):
+        return '1'
+    # Kategori Syarat (State q2)
+    if any(keyword in val for keyword in ['syarat', 'dokumen', 'berkas', 'persyaratan', 'piagam', 'foto', 'kk', 'ijazah', 'skl']):
+        return '2'
+    # Kategori Kuota (State q3)
+    if any(keyword in val for keyword in ['kuota', 'daya tampung', 'persen', 'jalur', 'zonasi', 'prestasi', 'afirmasi']):
+        return '3'
+    # Kategori Panduan/Cara Daftar (State q4)
+    if any(keyword in val for keyword in ['panduan', 'cara', 'bagaimana', 'daftar', 'registrasi', 'langkah', 'alur', 'web', 'situs']):
+        return '4'
+        
+    # Jika berupa angka murni yang tidak sengaja terketik secara langsung
+    if val in ['1', '2', '3', '4']:
+        return val
+        
+    # Jika tidak mengenali pola kalimat sama sekali
+    return val
+
+# --- Fungsi Logika Transisi DFA (δ) ---
+def process_input(raw_input):
+    # Konversi kalimat natural menjadi alfabet input DFA resmi
+    val = natural_input_mapping(raw_input)
     prev_state = st.session_state.current_state
     
     if prev_state == 'q5' and val == 'mulai':
@@ -301,13 +335,13 @@ def process_input(user_input):
         elif val == '4': next_state = 'q4'
         elif val == '9': next_state = 'q5'
         else:
-            return False, "⚠️ Pilihan tidak tersedia. Harap masukkan nomor menu yang valid (1/2/3/4/9).", prev_state, prev_state
+            return False, "⚠️ Perintah tidak dimengerti. Anda bisa mengetik langsung pertanyaan Anda (misal: *'kapan pendaftaran dibuka?'* atau *'apa saja syarat dokumen?'*).", prev_state, prev_state
             
         st.session_state.current_state = next_state
         return True, STATES[next_state]['text'], prev_state, next_state
         
     elif prev_state in ['q1', 'q2', 'q3', 'q4']:
-        return False, "💡 Anda sedang berada di dalam menu. Ketik **[0]** terlebih dahulu untuk kembali ke Menu Utama.", prev_state, prev_state
+        return False, "💡 Anda sedang berada di dalam menu. Ketik **[0]** atau **'kembali'** terlebih dahulu untuk menuju Menu Utama.", prev_state, prev_state
         
     elif prev_state == 'q5':
         return False, "Sesi Anda telah berakhir. Ketik **'mulai'** untuk mengaktifkan kembali mesin chatbot.", prev_state, prev_state
