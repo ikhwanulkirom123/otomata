@@ -360,7 +360,7 @@ col1, col2 = st.columns([1.2, 1], gap="large")
 
 # ================= KOLOM 1: INTERFACES CHAT =================
 with col1:
-    st.markdown("### 💬 Chatbot Otomata")
+    st.markdown("### 💬 Chatbot Otomata V1")
     
     chat_container = st.container(height=420)
     
