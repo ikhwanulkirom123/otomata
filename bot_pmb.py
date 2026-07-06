@@ -351,7 +351,7 @@ col_logo, col_title = st.columns([1.5, 4])
 with col_logo:
     st.markdown('<div class="header-logo">PMB UPGRIS<span class="header-dot">.</span></div>', unsafe_allow_html=True)
 with col_title:
-    st.caption("🔴 **PMB Care Chatbot Visualizer (Universitas PGRI Semarang)** — Berbasis Finite State Automata (DFA)")
+    st.caption("🔴 **PMB Care Chatbot Visualizer V.2 (Universitas PGRI Semarang)** — Berbasis Finite State Automata (DFA)")
 
 st.markdown("---")
 
