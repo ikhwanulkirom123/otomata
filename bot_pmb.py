@@ -3,7 +3,7 @@ import time
 
 # --- Konfigurasi Halaman ---
 st.set_page_config(
-    page_title="PMB UPGRIS Chatbot v1",
+    page_title="PMB UPGRIS Chatbot v2",
     page_icon="🔴",
     layout="wide"
 )
